@@ -17,9 +17,8 @@ export async function useWebSocket<S, R>(url: string, protocols?: string): Promi
     [url, protocols]
   )
   webSocket.onmessage = (event: MessageEvent) => {
-    const x = JSON.parse(event.data)
     console.log('event data:', event)
-    subject.next(x)
+    subject.next(JSON.parse(event.data))
   }
   webSocket.onerror = (err: any) => subject.error(err)
   const sender = new Promise<(m: S) => void>((resolve, reject) => {
