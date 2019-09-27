@@ -9,7 +9,7 @@ const WorkerComponent: React.FC<{ className: string }> = ({ className }) => {
     setMessage(message => [...message, `Svar: ${e.data}`])
   }
   function startJob() {
-    setMessage(message => [...message, `Startar bakgrundsjobb#${cnt}`])
+    setMessage(message => [...message, `Starting the background job#${cnt}`])
     sendMessage(`Bakgrundsjobb#${cnt}`)
     setCnt(cnt => cnt + 1);
   }
@@ -20,9 +20,9 @@ const WorkerComponent: React.FC<{ className: string }> = ({ className }) => {
   return (
     <div className={className}>
       <h1>Web Worker</h1>
-      <button onClick={startJob}>Starta arbete</button><br />
+      <button onClick={startJob}>Start background task</button><br />
       <div className="mt-sm App-alert">
-        Meddelanden från jobbartråden
+        Messages from background worker
         <ul>
           {message.map((m, i) => <li key={i}>{m}</li>)}
         </ul>

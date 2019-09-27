@@ -9,14 +9,16 @@ const App: React.FC = () => {
     <div className="App">
       <header className="App-header">Testa Web Worker</header>
       <main className="App-main">
-        <input className="m-sm" type="checkbox" checked={show} onChange={() => setShow(!show)} /> Visa jobbaren<br />
+        <input className="m-sm" type="checkbox" checked={show} onChange={() => setShow(!show)} /> Show sub-components<br />
         {show ?
-          <WorkerComponent className="m-sm" />
+          <>
+            <WorkerComponent className="m-sm" />
+            <hr />
+            <WebSocketComponent />
+          </>
           :
           null
         }
-        <hr/>
-        <WebSocketComponent />
       </main>
     </div>
   );

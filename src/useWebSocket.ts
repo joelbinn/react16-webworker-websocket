@@ -34,7 +34,10 @@ export async function useWebSocket<S, R>(url: string, protocols?: string): Promi
   return sender.then(sendMessage => ({
     sendMessage,
     receivedMessages: subject.asObservable(),
-    close: webSocket.close
+    close: () => {
+      console.log(`Close connection to ${url}`)
+      webSocket.close()
+    }
   }))
 
 }
