@@ -1,43 +1,76 @@
 import React from 'react'
-import { Observable, ReplaySubject } from 'rxjs'
 
 interface WebSocketConnection<Send, Receive> {
   sendMessage: (m: Send) => void,
-  receivedMessages: Observable<Receive>
+  setOnMessageReceived: (onMessageReceived: (m: Receive) => void) => void
+  setOnError: (onError: (e: any) => void) => void
   close: () => void
+  connected: boolean
 }
 
-export async function useWebSocket<S, R>(url: string, protocols?: string): Promise<WebSocketConnection<S, R>> {
-  const subject = React.useMemo(() => new ReplaySubject<R>(1), [])
-  const webSocket = React.useMemo(
-    () => {
-      console.log('Connecting to:', url)
-      return new WebSocket(url, protocols)
-    },
-    [url, protocols]
-  )
-  webSocket.onmessage = (event: MessageEvent) => {
-    console.log('event data:', event)
-    subject.next(JSON.parse(event.data))
+class WebSocketConnectionImpl<S, R> implements WebSocketConnection<S, R> {
+  onMessageReceived = (m: R) => {
+
   }
-  webSocket.onerror = (err: any) => subject.error(err)
-  const sender = new Promise<(m: S) => void>((resolve, reject) => {
-    webSocket.onopen = () => {
-      console.log('Connected to:', url)
-      resolve((m: S) => {
-        console.log('received message:', m)
-        webSocket.send(JSON.stringify(m))
-      })
-    }
-  })
 
-  return sender.then(sendMessage => ({
-    sendMessage,
-    receivedMessages: subject.asObservable(),
-    close: () => {
-      console.log(`Close connection to ${url}`)
-      webSocket.close()
-    }
-  }))
+  onError = (err: any) => {
 
+  }
+
+  sendMessage = (m: S) => {
+
+  }
+
+  close = () => {
+
+  }
+
+  connected = false
+
+  readonly setOnMessageReceived = (onMessageReceived: (m: R) => void) =>
+    this.onMessageReceived = onMessageReceived
+
+  readonly setOnError = (onError: (err: any) => void) =>
+    this.onError = onError
+}
+
+export function useWebSocket<S, R>(url: string, protocols?: string): WebSocketConnection<S, R> {
+  const socketRef = React.useRef<WebSocket>()
+  const connectionRef = React.useRef<WebSocketConnectionImpl<S, R>>(new WebSocketConnectionImpl<S, R>())
+
+  React.useEffect(() => {
+    const connection = connectionRef.current
+
+    if (!socketRef.current) {
+      console.log('Connecting to:', url)
+      const webSocket = new WebSocket(url, protocols)
+      webSocket.onerror = (e) => connection.onError(e)
+      webSocket.onopen = () => {
+        console.log('Connected to:', url)
+        webSocket.onmessage = (event: MessageEvent) => {
+          console.log('event data:', event)
+          connection.onMessageReceived(event.data)
+        }
+
+        connectionRef.current.sendMessage = (m: S) => {
+          console.log('received message:', m)
+          webSocket.send(JSON.stringify(m))
+        }
+
+        connectionRef.current.close = () => {
+          console.log(`Close connection to ${url}`)
+          webSocket.close()
+        }
+
+        connectionRef.current.connected = false
+      }
+    }
+
+    return () => {
+      connection.connected = false
+      connection.close()
+    }
+  }, [url, protocols])
+
+  return connectionRef.current
 }

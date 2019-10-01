@@ -6,11 +6,11 @@ import theWorker from './task'
 const WorkerComponent: React.FC<{ className: string }> = ({ className }) => {
   function onMessage(e: MessageEvent) {
     console.log('Message from Worker', e)
-    setMessage(message => [...message, `Svar: ${e.data}`])
+    setMessage(message => [...message, `Result: ${e.data}`])
   }
   function startJob() {
     setMessage(message => [...message, `Starting the background job#${cnt}`])
-    sendMessage(`Bakgrundsjobb#${cnt}`)
+    sendMessage(`Background job#${cnt}`)
     setCnt(cnt => cnt + 1);
   }
   const [cnt, setCnt] = React.useState(1)
